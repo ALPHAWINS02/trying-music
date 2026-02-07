@@ -50,7 +50,6 @@ export default function ValentinesDayPage() {
     setCelebration(true);
 
     // Launch fireworks
-    const fw: Firework[] = [];
     for (let i = 0; i < 6; i++) {
       setTimeout(() => {
         const firework: Firework = {
