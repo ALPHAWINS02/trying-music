@@ -5,14 +5,22 @@ interface BackgroundMusicProps {
   src: string;
 }
 
+/** Resolve asset path with Vite base (required for GitHub Pages subpath) */
+function resolveAudioSrc(path: string): string {
+  const base = import.meta.env.BASE_URL;
+  const normalized = path.startsWith("/") ? path.slice(1) : path;
+  return `${base}${normalized}`;
+}
+
 export default function BackgroundMusic({ src }: BackgroundMusicProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const currentSrcRef = useRef<string>("");
   const listenerRef = useRef<(() => void) | null>(null);
+  const resolvedSrc = resolveAudioSrc(src);
 
   useEffect(() => {
     // Same track already playing — nothing to do
-    if (currentSrcRef.current === src && audioRef.current) return;
+    if (currentSrcRef.current === resolvedSrc && audioRef.current) return;
 
     // Clean up any pending interaction listener from a previous track
     if (listenerRef.current) {
@@ -29,12 +37,12 @@ export default function BackgroundMusic({ src }: BackgroundMusicProps) {
     }
 
     // Create and start the new track
-    const audio = new Audio(src);
+    const audio = new Audio(resolvedSrc);
     audio.loop = true;
     audio.volume = 0;
     audio.preload = "auto";
     audioRef.current = audio;
-    currentSrcRef.current = src;
+    currentSrcRef.current = resolvedSrc;
 
     const tryPlay = () => {
       // Guard: only play if this audio is still the current one
@@ -90,7 +98,7 @@ export default function BackgroundMusic({ src }: BackgroundMusicProps) {
         listenerRef.current = null;
       }
     };
-  }, [src]);
+  }, [resolvedSrc]);
 
   return null; // No UI — music plays silently in the background
 }
